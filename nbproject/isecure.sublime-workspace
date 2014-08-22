@@ -1,0 +1,290 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+		]
+	},
+	"buffers":
+	[
+	],
+	"build_system": "",
+	"command_palette":
+	{
+		"height": 335.0,
+		"selected_items":
+		[
+			[
+				"Package Control: ",
+				"Package Control: Install Package"
+			]
+		],
+		"width": 514.0
+	},
+	"console":
+	{
+		"height": 139.0,
+		"history":
+		[
+			"import urllib.request,os,hashlib; h = '7183a2d3e96f11eeadd761d777e62404' + 'e330c659d4bb41d3bdf022e94cab3cd0'; pf = 'Package Control.sublime-package'; ipp = sublime.installed_packages_path(); urllib.request.install_opener( urllib.request.build_opener( urllib.request.ProxyHandler()) ); by = urllib.request.urlopen( 'http://sublime.wbond.net/' + pf.replace(' ', '%20')).read(); dh = hashlib.sha256(by).hexdigest(); print('Error validating download (got %s instead of %s), please try manual install' % (dh, h)) if dh != h else open(os.path.join( ipp, pf), 'wb' ).write(by) "
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"file_history":
+	[
+		"/C/xampp/htdocs/isecure/protected/controllers/SiteController.php",
+		"/C/xampp/htdocs/isecure/protected/views/site/index.php",
+		"/C/xampp/htdocs/isecure/themes/isecure/css/custom.css",
+		"/C/xampp/htdocs/isecure/themes/isecure/views/layouts/main.php",
+		"/C/xampp/htdocs/isecure/protected/views/videos/index.php",
+		"/C/Users/ar/Documents/Notes.txt",
+		"/C/Users/ar/Documents/ar.txt",
+		"/C/xampp/htdocs/isecure/themes/isecure/css/animate.css",
+		"/C/xampp/htdocs/isecure/protected/views/site/pages/about.php",
+		"/C/xampp/htdocs/isecure/protected/controllers/SiteController.php~",
+		"/K/isecure/protected/config/main.php",
+		"/C/xampp/htdocs/isecure/protected/config/main.php",
+		"/C/xampp/htdocs/isecure/protected/views/lecturers/index.php",
+		"/C/xampp/htdocs/isecure/index.php",
+		"/K/isecure/index.php",
+		"/D/Henchman/MTD Project/mtd.ini",
+		"/D/Henchman/MTD Project/Bin/Delphi_2.1.8.20140428/Delphi/RFID/RFID.pas",
+		"/C/Users/ar/AppData/Local/Temp/fz3temp-1/main 2.php",
+		"/C/xampp/htdocs/isecure/protected/modules/shop/components/payment/Paypal.php",
+		"/C/xampp/htdocs/isecure/protected/modules/shop/views/order/paypal_form.php",
+		"/C/Users/ar/Downloads/VMCDEMO/Unit1.pas",
+		"/C/Users/ar/Downloads/VMCDEMO/VMCMain.pas",
+		"/C/Users/ar/Downloads/VMCDEMO/MDBEngine.pas",
+		"/C/Users/ar/AppData/Local/Temp/fz3temp-1/main.php",
+		"/D/main.php",
+		"/D/online_bar_error.txt",
+		"/C/xampp/htdocs/isecure/protected/modules/shop/models/Order.php",
+		"/C/xampp/htdocs/isecure/protected/modules/shop/controllers/OrderController.php",
+		"/C/xampp/htdocs/isecure/protected/modules/shop/models/PayPalForm.php",
+		"/C/xampp/htdocs/isecure/protected/modules/shop/models/Shop.php",
+		"/C/xampp/htdocs/isecure/protected/modules/shop/ShopModule.php",
+		"/C/xampp/htdocs/index.php",
+		"/C/Users/ar/AppData/Local/Temp/fz3temp-1/mail.php",
+		"/C/xampp/htdocs/isecure/protected/components/Paypal.php",
+		"/C/xampp/htdocs/isecure/protected/modules/shop/controllers/PaymentMethodController.php",
+		"/C/xampp/htdocs/isecure/protected/modules/shop/components/payment/Paypal.txt",
+		"/C/xampp/htdocs/isecure/protected/modules/shop/views/products/index.php",
+		"/C/xampp/htdocs/isecure/protected/modules/shop/views/order/waypoint.php",
+		"/C/xampp/htdocs/isecure/protected/modules/shop/views/paymentMethod/choose.php",
+		"/C/xampp/htdocs/isecure/protected/models/Videos.php",
+		"/C/xampp/htdocs/isecure/vimeo/index.php",
+		"/C/xampp/htdocs/isecure/protected/vendor/vimeo/vimeo.php",
+		"/C/xampp/htdocs/isecure/protected/modules/shop_modifed/views/paymentMethod/choose.php",
+		"/C/Users/ar/Documents/remotestaff_phones",
+		"/C/xampp/htdocs/isecure/protected/modules/shop/views/order/create.php",
+		"/C/xampp/htdocs/isecure/protected/modules/shop/views/products/view.php",
+		"/C/Users/ar/AppData/Local/Temp/fz3temp-1/Videos.php",
+		"/C/xampp/htdocs/isecure/protected/modules/shop/models/PaymentMethod.php",
+		"/C/xampp/htdocs/isecure/protected/extensions/iSecure/iSecurePrepaidWidget.php",
+		"/C/xampp/htdocs/isecure/protected/extensions/iSecure/views/SubscriptionWidget.php",
+		"/C/xampp/htdocs/isecure/protected/modules/shop/views/image/view.php",
+		"/C/xampp/htdocs/isecure/protected/extensions/iSecure/views/PrepaidWidget.php",
+		"/C/xampp/htdocs/isecure/protected/modules/shop/views/shippingMethod/choose.php",
+		"/C/xampp/htdocs/isecure/protected/modules/shop/views/customer/create.php",
+		"/C/xampp/htdocs/isecure/protected/modules/shop/controllers/ShippingMethodController.php",
+		"/C/xampp/htdocs/isecure/protected/modules/shop/controllers/ProductsController.php",
+		"/C/xampp/htdocs/isecure/themes/isecure/blog-post.html",
+		"/C/xampp/htdocs/isecure/themes/isecure/fonts/fontawesome-webfont.eot",
+		"/C/xampp/htdocs/isecure/protected/extensions/iSecure/views/ProductSideMenu.php",
+		"/C/xampp/htdocs/isecure/protected/data/onlinebar_isecure (1).sql",
+		"/C/xampp/htdocs/isecure/protected/modules/shop/components/Relation.php",
+		"/C/xampp/htdocs/isecure/protected/modules/shop/models/ShoppingCart.php",
+		"/C/xampp/htdocs/isecure/protected/modules/shop/controllers/ShopController.php",
+		"/C/Users/ar/AppData/Roaming/Sublime Text 3/Packages/HTML-CSS-JS Prettify/.jsbeautifyrc",
+		"/C/Users/ar/AppData/Roaming/Sublime Text 3/Packages/HTML-CSS-JS Prettify/HTMLPrettify.sublime-settings",
+		"/C/Users/ar/AppData/Roaming/Sublime Text 3/Packages/User/Nodejs.sublime-settings",
+		"/C/Users/ar/AppData/Roaming/Sublime Text 3/Packages/User/Preferences.sublime-settings",
+		"/usr/share/themes/elementary/gtk-3.0/toolbar.css",
+		"/home/ar/.config/sublime-text-3/Packages/Default/Preferences.sublime-settings",
+		"/home/ar/.config/sublime-text-3/Packages/Xdebug Client/Xdebug.sublime-settings",
+		"/home/ar/.config/sublime-text-3/Packages/Default/Default (Linux).sublime-keymap",
+		"/opt/lampp/htdocs/isecure/index.php",
+		"/opt/lampp/htdocs/yii/base/CApplication.php",
+		"/opt/lampp/htdocs/yii/web/CHttpSession.php",
+		"/home/ar/.config/sublime-text-3/Packages/User/Preferences.sublime-settings",
+		"/opt/lampp/htdocs/isecure/nbproject/isecure.sublime-project",
+		"/home/ar/.config/sublime-text-2/Packages/User/Preferences.sublime-settings",
+		"/home/ar/.config/sublime-text-2/Packages/User/Xdebug.sublime-settings",
+		"/home/ar/.config/sublime-text-2/Packages/Package Control/Package Control.sublime-settings",
+		"/home/ar/.config/sublime-text-2/Packages/Xdebug Client/Xdebug.sublime-settings",
+		"/opt/lampp/etc/php.ini",
+		"/opt/lampp/htdocs/isecure/index-test.php"
+	],
+	"find":
+	{
+		"height": 36.0
+	},
+	"find_in_files":
+	{
+		"height": 92.0,
+		"where_history":
+		[
+			"C:\\xampp\\htdocs\\isecure\\protected\\modules\\shop",
+			"C:\\xampp\\htdocs\\isecure"
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"jum",
+			"Currency",
+			"Currency cannot be blank",
+			"Currency cannot be blank."
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"sheets":
+			[
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 23.0
+	},
+	"input":
+	{
+		"height": 35.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"output.xdebug":
+	{
+		"height": 0.0
+	},
+	"project": "isecure.sublime-project",
+	"replace":
+	{
+		"height": 42.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"settings":
+	{
+		"xdebug":
+		{
+			"hide_conflict": false,
+			"restore_index":
+			{
+				"15":
+				{
+					"group": 0,
+					"index": 0
+				},
+				"16":
+				{
+					"group": 0,
+					"index": 1
+				}
+			},
+			"restore_layout":
+			{
+				"cells":
+				[
+					[
+						0,
+						0,
+						1,
+						1
+					]
+				],
+				"cols":
+				[
+					0.0,
+					1.0
+				],
+				"rows":
+				[
+					0.0,
+					1.0
+				]
+			}
+		}
+	},
+	"show_minimap": false,
+	"show_open_files": true,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 240.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}

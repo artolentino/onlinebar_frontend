@@ -1,0 +1,225 @@
+<?php
+/* @var $this VideosController */
+/* @var $dataProvider CActiveDataProvider */
+
+$this->breadcrumbs=array(
+        'Home'=>array('/site/index'),
+	'Videos',
+);
+if(isset($_GET['id'])) {
+   $_id =$_GET['id']; 
+
+   foreach ($ProgramCategory as $Category) {
+   	$CategoryName = $Category->code;
+}
+   }
+
+
+   
+else {
+  $CategoryName = 'All Videos';
+
+}
+
+
+?>
+
+<!-- Wrapper -->
+    <div class="wrapper">
+
+      <!-- Topic Header -->
+      <div class="topic">
+        <div class="container">
+          <div class="row">
+            <div class="col-sm-4">
+              <h3 class="primary-font"><?php echo $CategoryName; ?></h3>
+            </div>
+            <div class="col-sm-8">
+              <?php if (isset($this->breadcrumbs)): ?>
+                            <?php
+                            $this->widget('zii.widgets.CBreadcrumbs', array(
+                                'links' => $this->breadcrumbs,
+                                'homeLink' => false,
+                                'tagName' => 'ol',
+                                'separator' => '',
+                                'activeLinkTemplate' => '<li><a href="{url}">{label}</a></li>',
+                                'inactiveLinkTemplate' => '<li><span>{label}</span></li>',
+                                'htmlOptions' => array('class' => 'breadcrumb pull-right hidden-xs')
+                            ));
+                            ?>
+                    <!-- breadcrumbs -->
+                        <?php endif ?>  
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="container">
+        <div class="row">
+          <div class="col-sm-3">
+
+            <!-- Categories -->
+            <div class="shop-category first-child">Categories</div>
+            <ul class="nav nav-pills nav-stacked">
+                      
+             <?php if(!isset($_id)) { ?>
+               <li class="active" ><a class="bg-hover-color" href="video/index">All</a></li> 
+             <?php } else { ?>  
+              <li><a class="bg-hover-color" href="video/index">All</a></li>      
+             <?php } ?>   
+                
+                 <?php 
+                     foreach ($this->OurPrograms as $OurProgram)
+                 { 
+                     //Check if $_id has a value
+                      if(isset($_id)) {
+                          if($_id == $OurProgram->id) { ?>
+                            <li class="active"><?php echo CHtml::link($OurProgram->code,array('','id'=>$OurProgram->id),array('class' => 'bg-hover-color' )) ?></li>
+                          <?php } else {
+                              ?>
+                              <li><?php echo CHtml::link($OurProgram->code,array('','id'=>$OurProgram->id),array('class' => 'bg-hover-color' )) ?></li>
+                        <?php     }
+                          }
+                        else { 
+                      ?>
+                      <li><?php echo CHtml::link($OurProgram->code,array('','id'=>$OurProgram->id),array('class' => 'bg-hover-color' )) ?></li>
+                      <?php }
+                      } ?>
+                         
+            </ul>
+
+            <!-- Search -->
+            <div class="shop-category">Search</div>
+            
+             <?php echo CHtml::beginForm(array('/Videos/index'),'post'); ?>
+            <form role="form" class="shop-search">
+              <div class="form-group">
+
+               <?php echo CHtml::dropDownList('category_id', '', 
+                                CHtml::listData(Programs::model()->findAll(), 'id', 'code'), array('class'=>'form-control','prompt'=>'Select category'));?>
+                
+              </div>
+              <div class="form-group">
+             <?php echo CHtml::textField('keyword', '', array('class'=>'form-control','placeholder'=>'Looking for...' )) ?>
+              </div>
+              <?php echo CHtml::submitButton('Search', array('class'=>'btn btn-color')) ?>
+              
+            </form>
+            <?php echo CHtml::endForm(); ?> 
+
+          </div>
+          <div class="col-sm-9">
+               
+            <div class="row">
+              <div class="tab-content">
+              <div class="col-sm-12">
+
+		<?php if($pages->itemCount >1){ ?>
+               <p class ="pull-right">Displaying <?php echo $pages->getOffset() + 1; ?>-<?php echo $pages->getOffset() + ($pages->itemCount - $pages->getOffset() )?>  of <?php echo $pages->itemCount;?> results.</p>
+               <?php } else { ?>
+                   <p class ="pull-right">No Results found.</p>
+               <?php } ?>
+               </div>
+                <!-- All-->
+                <div class="tab-pane fade in active" id="all">
+                  <?php 
+                     $data = array();
+                     foreach ($model as $videos)
+
+                 { 
+                         
+                    //$data[] = $videos->attributes;  
+                    //print_r($videos->vimeo_embed_code);
+                    $video_info = Videos::model()->getVideoInfo($videos->vimeo_embed_code);
+
+                    if ($video_info){
+                              $image = $video_info['thumb_medium'];
+                              $title = $video_info['title'];
+                              $upload_date = $video_info['upload_date'];
+                              $number_of_plays = $video_info['number_of_plays'];
+                              $duration = $video_info['duration'];
+                              $width = $video_info['width'];
+                              $height = $video_info['height'];
+                              $video_url = $video_info['video_url'];
+                              } 
+                        else {
+                       // No vimeo data use default video thumbnail
+                              $image = Yii::app()->theme->baseUrl. '/img/default-video-thumbnail.jpg';
+                              $title = $videos->name;
+                              $duration = 'Unknown Duration';
+                              $width = 'unknown';
+                              $height = 'unknown';
+                              $video_url ='unknown';
+                              $upload_date = 'unknown';
+
+                              }
+                         ?>
+                  <div class="col-sm-4">
+                    <div class="shop-product">
+                      <?php echo CHtml::link(
+                                   CHtml::image($image, CHtml::encode($title), array()), array('/videos/view', 'id' => $videos->id),array('class' =>'img-responsive'));
+                                   ?>   
+                        <h5>  
+
+                             <?php echo CHtml::link($videos->name,array('/videos/view', 'id' => $videos->id)); ?>
+
+                      </h5>   
+                        
+                     
+                      <p class="text-muted">
+                          <?php 
+                                 foreach ($this->OurLecturers as $OurLecturer)
+                            { 
+                                     
+                                if($OurLecturer->id = $videos->attorneys_id ) {
+                                    
+                                  $name = 'Atty. ' . $OurLecturer->first_name . ' ' . $OurLecturer->last_name;   
+                                 
+                                    
+                                }else{
+                                 
+                                 $name = 'Unknown Author';} 
+                                   
+                 
+                           }
+                           
+                      
+                          echo CHtml::link($name  ,array('/lecturers/view','id'=>$OurLecturer->id));       
+                           ?>
+                          
+                      </p>
+                    </div>
+                  </div>
+                  <?php } ?>  
+                  </div>
+              </div> <!-- / .row -->
+
+              <!-- Pagination -->
+              <div class="row">
+                <div class="col-sm-12">
+                 
+                <?php 
+                  $this->widget('CLinkPager', array(
+                                    'currentPage'=>$pages->getCurrentPage(),
+                                    'itemCount'=>$item_count,
+                                    'pageSize'=>$page_size,
+                                    'maxButtonCount'=>5,
+                                    'firstPageLabel'=>'<<',
+                                    'prevPageLabel'=>'<',
+                                    'nextPageLabel'=>'>',
+                                    'lastPageLabel'=>'>>',
+                                    //'header'=>"<div class='pagination pagination-right'>",
+                                    'htmlOptions'=>array('class'=>'pagination pull-right bg-hover-color'),
+                                )); ?>
+
+		
+                    
+                </div>
+              </div> <!-- / .row -->
+
+            </div> <!-- / .row -->
+          </div>
+        </div> <!-- / .row -->
+      </div> <!-- / .container -->
+
+    </div> <!-- / .wrapper -->

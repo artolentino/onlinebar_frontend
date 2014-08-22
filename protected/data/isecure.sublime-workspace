@@ -1,0 +1,611 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"met",
+				"method"
+			],
+			[
+				"Pro",
+				"Products"
+			],
+			[
+				"produc",
+				"productCriteria"
+			],
+			[
+				"Produc",
+				"ProductCategory"
+			],
+			[
+				"mar",
+				"margin"
+			],
+			[
+				"marg",
+				"margin-right"
+			],
+			[
+				"wid",
+				"width"
+			],
+			[
+				"print",
+				"print_r"
+			],
+			[
+				"Programs",
+				"ProgramsCount"
+			],
+			[
+				"model",
+				"modelSubscription"
+			],
+			[
+				"Cate",
+				"CategoryName"
+			],
+			[
+				"vie",
+				"viewAllVideos"
+			],
+			[
+				"cate",
+				"CategoryName"
+			],
+			[
+				"Progra",
+				"ProgramCategory"
+			],
+			[
+				"Our",
+				"OurLecturers"
+			],
+			[
+				"pro",
+				"programsCriteria"
+			],
+			[
+				"GET",
+				"_GET"
+			],
+			[
+				"page",
+				"page_size"
+			],
+			[
+				"catego",
+				"category_id"
+			],
+			[
+				"Cat",
+				"CategoryName"
+			],
+			[
+				"C",
+				"Criteria_Category"
+			],
+			[
+				"vimeo",
+				"vimeo_video_id"
+			],
+			[
+				"Video",
+				"VideoDetail"
+			],
+			[
+				"video",
+				"video_url"
+			],
+			[
+				"for",
+				"foreach	foreach …"
+			],
+			[
+				"lay",
+				"layout"
+			],
+			[
+				"regio",
+				"regionName"
+			],
+			[
+				"padding",
+				"padding-right"
+			],
+			[
+				"reseller_",
+				"reseller_prepaid"
+			],
+			[
+				"pac",
+				"package_id"
+			],
+			[
+				"rese",
+				"reseller"
+			],
+			[
+				"provi",
+				"province_code"
+			],
+			[
+				"region_o",
+				"region_code"
+			],
+			[
+				"Lis",
+				"listData"
+			],
+			[
+				"before",
+				"beforeSave"
+			],
+			[
+				"bra",
+				"barangay_code"
+			],
+			[
+				"munic",
+				"Municity"
+			],
+			[
+				"prov",
+				"province_code"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"contents": "<?php\n\nclass OrderController extends Controller\n{\n	public $_model;\n\n	public function filters()\n	{\n		return array(\n				'accessControl',\n				);\n	}	\n\n	public function accessRules() {\n		return array(\n				array('allow',\n					'actions'=>array('create', 'confirm', 'success', 'failure', 'paypal',\n						'ipn',),\n					'users' => array('@'),\n					),\n				array('allow',\n					'actions'=>array('index', 'view'),\n					'users' => array('@'),\n					),\n				array('allow',\n					'actions'=>array('admin','delete', 'slip', 'invoice', 'update'),\n					'users' => array('admin'),\n					),\n				array('deny',  // deny all other users\n					'users'=>array('*'),\n					),\n				);\n	}\n\n	public function actionSlip($id) {\n		if($model = $this->loadModel($id))\n			if(Shop::module()->useTcPdf)\n				$this->renderPartial(Shop::module()->slipViewPdf, array(\n							'model' => $model));\n			else\n				$this->render(Shop::module()->slipView, array('model' => $model));\n	}\n\n	public function actionInvoice($id) {\n		if($model = $this->loadModel($id))\n			$this->render(Shop::module()->invoiceView, array('model' => $model));\n	}\n\n	public function beforeAction($action) {\n		$this->layout = Shop::module()->layout;\n		return parent::beforeAction($action);\n	}\n\n	public function actionView($id)\n	{\n		$model = Order::model()->with('customer')->findbyPk($id);\n\n		if($model) {\n			if($model->customer->user_id == Yii::app()->user->id\n					|| (Shop::module()->useWithYum && Yii::app()->user->isAdmin()) \n					|| Yii::app()->user->id == 1)\n			{\n\n				if(!$model->paymentMethod instanceof PaymentMethod)\n					Shop::log(Shop::t('Invalid payment method in order #{order_id}', array(\n									'{order_id}' => $model->order_id)), 'warning');\n\n				if(!$model->shippingMethod instanceof shippingMethod)\n					Shop::log(Shop::t('Invalid shipping method in order #{order_id}', array(\n									'{order_id}' => $model->order_id)), 'warning');\n\n				$this->render('view',array(\n							'model'=>$model\n							));\n			} else\n				throw new CHttpException(403, Shop::t(\n							'You are not allowed to view this order'));\n\n		} else throw new CHttpException(404, Shop::t(\n					'The requested Order could not be found'));\n	}\n\n	public function mailConfirmationMessage($order, $message) {\n		$email = $order->customer->email;\n		$title = Shop::t('Order confirmation');\n\n\n		if(mail($email, $title, $message))\n			Shop::setFlash(Shop::t('A order confirmation has been sent'));\n		else\n			Shop::setFlash(Shop::t('Error while sending confirmation message'));\n\n	}\n\n	public function actionUpdate($id) {\n		$order = $this->loadModel();\n		if( (Shop::module()->useWithYum && Yii::app()->user->isAdmin()) \n			|| Yii::app()->user->id == 1) {\n\n		if(isset($_POST['Order'])) {\n			if(\n					isset($_POST['SendConfirmationMessage'])\n					&& $_POST['SendConfirmationMessage'] == 1\n					&& isset($_POST['ConfirmationMessage']))\n				$this->mailConfirmationMessage($order, $_POST['ConfirmationMessage']);	\n\n			$order->attributes = $_POST['Order'];\n			$order->save();\n			$this->redirect(array('//shop/order/view', 'id' => $order->order_id));\n		}\n		$this->render('update', array('model' => $order));	\n		} else\n			throw new CHttpException(403);\n	}\n\n	/** Creation of a new Order \n	 * Before we create a new order, we need to gather Customer information.\n	 * If the user is logged in, we check if we already have customer information.\n	 * If so, we go directly to the Order confirmation page with the data passed\n	 * over. Otherwise we need the user to enter his data, and depending on\n	 * whether he is logged in into the system it is saved with his user \n	 * account or once just for this order.	\n	 */\n	public function actionCreate(\n			$customer = null,\n			$payment_method = null,\n			$shipping_method = null) {\n\n		// Shopping cart is empty, taking a order is not allowed yet\n		if(Shop::getCartContent() == array())\n			$this->redirect(array('//shop/shoppingCart/view'));\n\n		if(isset($_POST['ShippingMethod'])) \n			Yii::app()->user->setState('shipping_method', $_POST['ShippingMethod']);\n\n		if(isset($_POST['PaymentMethod'])) \n			Yii::app()->user->setState('payment_method', $_POST['PaymentMethod']);\n\n		if(isset($_POST['Order'])) \n			Yii::app()->user->setState('order_options', $_POST['Order']);\n\n		if(isset($_POST['DeliveryAddress']) && @$_POST['toggle_delivery'] == true) {\n			if(Address::isEmpty($_POST['DeliveryAddress'])) {\n				Shop::setFlash(Shop::t('Delivery address is not complete! Please fill in all fields to set the Delivery address'));\n			} else {\n				$deliveryAddress = new DeliveryAddress;\n				$deliveryAddress->attributes = $_POST['DeliveryAddress'];\n				if($deliveryAddress->save()) {\n					$model = Shop::getCustomer();\n\n					if(isset($_POST['toggle_delivery']))\n						$model->delivery_address_id = $deliveryAddress->id;\n					else\n						$model->delivery_address_id = 0;\n					$model->save(false, array('delivery_address_id'));\n				}\n			}\n		}\n\n		if(isset($_POST['BillingAddress']) && @$_POST['toggle_billing'] == true) {\n			if(Address::isEmpty($_POST['BillingAddress'])) {\n				Shop::setFlash(Shop::t('Billing address is not complete! Please fill in all fields to set the Billing address'));\n			} else {\n				$BillingAddress = new BillingAddress;\n				$BillingAddress->attributes = $_POST['BillingAddress'];\n				if($BillingAddress->save()) {\n					$model = Shop::getCustomer();\n					if(isset($_POST['toggle_billing']))\n						$model->billing_address_id = $BillingAddress->id;\n					else\n						$model->billing_address_id = 0;\n					$model->save(false, array('billing_address_id'));\n				}\n			}\n		}\n\n		if(!$customer)\n			$customer = Yii::app()->user->getState('customer_id');\n		if(!Yii::app()->user->isGuest && !$customer)\n			$customer = Customer::model()->find('user_id = :user_id ', array(\n						':user_id' => Yii::app()->user->id));\n		if(!$payment_method)\n			$payment_method = Yii::app()->user->getState('payment_method');\n		if(!$shipping_method)\n			$shipping_method = Yii::app()->user->getState('shipping_method');\n\n		if(!$customer) {\n			$this->render('/customer/create', array(\n						'action' => array('//shop/customer/create')));\n			Yii::app()->end();\n		}\n\n		if(!$shipping_method) {\n			$this->render('/shippingMethod/choose', array(\n						'customer' => Shop::getCustomer()));\n			Yii::app()->end();\n		}\n		if(!$payment_method) {\n			$this->render('/paymentMethod/choose', array(\n						'customer' => Shop::getCustomer()));\n			Yii::app()->end();\n		}\n\n		if($customer && $payment_method && $shipping_method) {\n			$order = new Order();\n			$order->applyOrderOptions();\n\n			if(is_numeric($customer))\n				$customer = Customer::model()->findByPk($customer);\n			if(is_numeric($shipping_method))\n				$shipping_method = ShippingMethod::model()->find('id = :id', array(\n							':id' => $shipping_method));\n			if(is_numeric($payment_method))\n				$payment_method = PaymentMethod::model()->findByPk($payment_method);\n\n			$this->render('/order/create', array(\n						'customer' => $customer,\n						'shippingMethod' => $shipping_method,\n						'paymentMethod' => $payment_method,\n						'order' => $order,\n						));\n\n		}\n	}\n\n	public function actionConfirm() {\n		Yii::app()->user->setState('order_comment', @$_POST['Order']['Comment']);\n		if(isset($_POST['accept_terms']) && $_POST['accept_terms'] == 1) {\n			$order = new Order();\n			$order->applyOrderOptions();\n\n			$customer = Shop::getCustomer();\n			$cart = Shop::getCartContent();\n\n			$order->customer_id = $customer->customer_id;\n\n			// fetch delivery data\n			$address = new DeliveryAddress();\n			if($customer->deliveryAddress)\n				$address->attributes = $customer->deliveryAddress->attributes;\n			else\n				$address->attributes = $customer->address->attributes;\n			$address->save();\n\n			$order->delivery_address_id = $address->id;\n\n			// fetch billing data\n			$address = new BillingAddress();\n			if($customer->billingAddress)\n				$address->attributes = $customer->billingAddress->attributes;\n			else\n				$address->attributes = $customer->address->attributes;\n			$address->save();\n			$order->billing_address_id = $address->id;\n			$order->email = Yii::app()->user->email;\n\n			$order->ordering_date = time();\n			$order->payment_method = Yii::app()->user->getState('payment_method');\n			$order->shipping_method = Yii::app()->user->getState('shipping_method');\n			$order->comment = Yii::app()->user->getState('order_comment');\n			$order->status = 'new';\n\n			if($order->save()) {\n				foreach($cart as $position => $product) {\n					$position = new OrderPosition;\n					$position->order_id = $order->order_id;\n					$position->product_id = $product['product_id'];\n					$position->amount = $product['amount'];\n					$position->specifications = json_encode($product['Variations']);\n					$position->save();\n				}\n\n				Shop::mailNotification($order);\n				Shop::flushCart(true);\n\n				if(Shop::module()->payPalMethod !== false \n						&& $order->payment_method == Shop::module()->payPalMethod) \n					$this->redirect(array(Shop::module()->payPalUrl,\n								'order_id' => $order->order_id));\n				else\n					$this->redirect(Shop::module()->successAction);\n			} \n				$this->redirect(Shop::module()->failureAction);\n		} else {\n			Shop::setFlash(\n					Shop::t(\n						'Please accept our Terms and Conditions to continue'));\n			$this->redirect(array('//shop/order/create'));\n		}\n	}\n\n	public function actionPaypal($order_id = null) {\n		$model = new PayPalForm();\n\n		if($order_id !== null)\n			$model->order_id = $order_id;\n\n		$order = Order::model()->findByPk($model->order_id);\n\n		if($order->customer->user_id != Yii::app()->user->id)\n			throw new CHttpException(403);\n\n		if($order->status != 'new') {\n			Shop::setFlash('The order is already paid');\n			$this->redirect('//shop/products/index');\n		}\n\n\n		if(isset($_POST['PayPalForm'])) {\n			$model->attributes = $_POST['PayPalForm'];\n\n			if($model->validate()) {\n				echo $model->handlePayPal($order);\n			}\n		}\n\n		$this->render('/order/paypal_form', array(\n					'model' => $model));\n	}\n\n	public function actionIpn() {\n		Yii::import('application.modules.shop.components.payment.Paypal');\n\n		$paypal = new Paypal();\n		Shop::log('Paypal payment attempt');\n\n		// Log the IPN results\n		$paypal->ipnLog = TRUE;\n\n		if(Shop::module()->payPalTestMode)\n			$paypal->enableTestMode();\n\n		// Check validity and write down it\n		if ($paypal->validateIpn())\n		{\n			if ($paypal->ipnData['payment_status'] == 'Completed')\n			{\n				Shop::log('Paypal payment arrived :'.var_dump($paypal));\n			}\n			else\n			{\n				Shop::log('Paypal payment raised an error :'.var_dump($paypal));\n			}\n		} \n	}\n\n	public function actionSuccess()\n	{\n		$this->render('/order/success');\n	}\n\n	public function actionFailure()\n	{\n		$this->render('/order/failure');\n	}\n\n	public function actionIndex()\n	{\n\n		$model = new Order('search');\n\n		if(isset($_GET['Order']))\n			$model->attributes=$_GET['Order'];\n\n		$model->user_id = Yii::app()->user->id;\n\n		$this->render('index',array(\n					'model'=>$model,\n					));\n	}\n\n	public function actionAdmin()\n	{\n		$this->layout = Shop::module()->adminLayout;\n		$model=new Order('search');\n\n		if(isset($_GET['Order']))\n			$model->attributes=$_GET['Order'];\n\n		$this->render('admin',array(\n					'model'=>$model,\n					));\n	}\n\n	public function loadModel()\n	{\n		if($this->_model===null)\n		{\n			if(isset($_GET['id']))\n				$this->_model=Order::model()->findbyPk($_GET['id']);\n			if($this->_model===null)\n				throw new CHttpException(404,'The requested page does not exist.');\n		}\n		return $this->_model;\n	}\n\n}\n",
+			"file": "/opt/lampp/htdocs/isecure/protected/modules/shop/controllers/OrderController.php",
+			"file_size": -1,
+			"file_write_time": -1,
+			"settings":
+			{
+				"buffer_size": 11337,
+				"line_ending": "Unix"
+			}
+		}
+	],
+	"build_system": "",
+	"command_palette":
+	{
+		"height": 317.0,
+		"selected_items":
+		[
+			[
+				"Package Control: ",
+				"Package Control: Install Package"
+			]
+		],
+		"width": 450.0
+	},
+	"console":
+	{
+		"height": 132.0,
+		"history":
+		[
+			"import urllib.request,os,hashlib; h = '7183a2d3e96f11eeadd761d777e62404' + 'e330c659d4bb41d3bdf022e94cab3cd0'; pf = 'Package Control.sublime-package'; ipp = sublime.installed_packages_path(); urllib.request.install_opener( urllib.request.build_opener( urllib.request.ProxyHandler()) ); by = urllib.request.urlopen( 'http://sublime.wbond.net/' + pf.replace(' ', '%20')).read(); dh = hashlib.sha256(by).hexdigest(); print('Error validating download (got %s instead of %s), please try manual install' % (dh, h)) if dh != h else open(os.path.join( ipp, pf), 'wb' ).write(by)"
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"file_history":
+	[
+		"/opt/lampp/htdocs/isecure/protected/modules/shop/components/payment/Paypal.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/shop/models/Order.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/shop/views/shippingMethod/choose.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/shop/controllers/ShippingMethodController.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/shop_modifed/controllers/OrderController.php",
+		"/opt/lampp/htdocs/isecure/protected/config/main.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/shop/ShopModule.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/shop/views/shoppingCart/view.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/shop/controllers/ProductsController.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/shop/controllers/InstallController.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/shop/controllers/CustomerController.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/shop_2/controllers/OrderController.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/shop/components/payment/paypal_start.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/shop/views/order/waypoint.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/shop/models/Shop.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/shop/controllers/OrderController.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/shop/views/order/success.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/shop/views/order/create.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/shop/views/customer/view.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/shop/views/order/index.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/shop/views/customer/_form.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/shop/controllers/PaymentMethodController.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/shop/views/paymentMethod/choose.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/shop/views/customer/create.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/shop/models/DeliveryAddress.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/shop/models/Customer.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/shop/models/Address.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/shop/controllers/ShopController.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/shop/models/BillingAddress.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/shop/controllers/DefaultController.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/shop/controllers/CategoryController.php",
+		"/opt/lampp/htdocs/isecure/themes/isecure/views/layouts/main.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/user/models/UserLogin.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/user/controllers/LoginController.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/user/views/user/login.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/user/models/User.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/user/controllers/UserController.php",
+		"/opt/lampp/htdocs/isecure/protected/views/site/index.php",
+		"/opt/lampp/htdocs/onlinebarreview/protected/config/main.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/user/components/Relation.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/user/models/YumUser.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/user/controllers/YumInstallController.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/user/UserModule.php",
+		"/opt/lampp/htdocs/isecure/index.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/shop/views/order/view.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/shop/controllers/ImageController.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/shop/controllers/ProductSpecificationController.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/shop/controllers/ShoppingCartController.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/shop/controllers/TaxController.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/shop/views/layouts/shop.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/shop/components/views/admin.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/shop/views/image/view.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/shop/views/products/view.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/shop/views/shoppingCart/_form.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/shop/components/Relation.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/shop/views/products/_view.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/shop/views/products/index.php",
+		"/opt/lampp/htdocs/isecure/protected/views/site/error.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/shop/views/customer/_view.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/shop/models/PayPalForm.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/shop/docs/config.txt",
+		"/opt/lampp/htdocs/isecure/protected/modules/shop/models/ShoppingCart.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/shop/views/order/paypal_form.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/shop/views/order/failure.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/shop/views/order/invoice.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/shop/views/order/terms.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/user/views/profile/profile.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/shop/views/shoppingCart/index.php",
+		"/opt/lampp/htdocs/isecure/protected/controllers/VideosController.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/shop/views/products/addToCart.php",
+		"/opt/lampp/htdocs/isecure/protected/extensions/iSecure/views/SubscriptionWidget.php",
+		"/opt/lampp/htdocs/isecure/protected/extensions/iSecure/iSecureSubscriptionWidget.php",
+		"/opt/lampp/htdocs/isecure/protected/views/videos/index.php",
+		"/opt/lampp/htdocs/isecure/protected/views/videos/view.php",
+		"/opt/lampp/htdocs/isecure/protected/views/lecturers/view.php",
+		"/opt/lampp/htdocs/isecure/themes/isecure/css/custom.css",
+		"/opt/lampp/htdocs/isecure/protected/modules/shop/models/Products.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/shop/views/some_layouts/shop.php",
+		"/opt/lampp/htdocs/isecure/protected/extensions/iSecure/views/ProductCategorySideMenu.php",
+		"/opt/lampp/htdocs/isecure/protected/extensions/iSecure/iSecureProductCategorySideMenu.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/user/views/user/index.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/shop/components/views/shopping_cart.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/shop/assets/css/shop_print.css",
+		"/opt/lampp/htdocs/isecure/protected/modules/shop/assets/css/shop.css",
+		"/opt/lampp/htdocs/isecure/protected/extensions/iSecure/iSecurePrepaidWidget.php",
+		"/opt/lampp/htdocs/isecure/protected/extensions/iSecure/views/PrepaidWidget.php",
+		"/opt/lampp/htdocs/isecure/protected/controllers/PrepaidActivationController.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/user/messages/de/user.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/user/views/profile/edit.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/user/views/profile/changepassword.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/user/components/UWprofilepic/css/fileuploader.css",
+		"/opt/lampp/htdocs/onlinebarreview/protected/modules/user/views/profile/edit.php",
+		"/opt/lampp/htdocs/isecure/protected/controllers/SiteController.php",
+		"/opt/lampp/htdocs/isecure/protected/views/site/login.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/user/components/UWprofilepic.php",
+		"/opt/lampp/htdocs/isecure/protected/data/map.txt",
+		"/opt/lampp/htdocs/isecure/protected/modules/user/views/recovery/recovery.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/user/views/recovery/changepassword.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/user/views/user/registration.php",
+		"/opt/lampp/htdocs/onlinebarreview/protected/modules/user/views/user/login.php",
+		"/opt/lampp/htdocs/isecure/protected/vendor/vimeo/vimeo.php",
+		"/opt/lampp/htdocs/isecure/protected/extensions/iSecure/iSecureProgramsSideMenu.php",
+		"/opt/lampp/htdocs/isecure/protected/extensions/iSecure/views/ProgramsSideMenu.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/user/controllers/ProfileController.php",
+		"/opt/lampp/htdocs/onlinebarreview/protected/modules/user/views/admin/index.php",
+		"/opt/lampp/htdocs/onlinebarreview/protected/modules/user/views/profile/profile.php",
+		"/opt/lampp/htdocs/isecure/protected/modules/user/models/Profile.php",
+		"/home/ar/.config/sublime-text-3/Packages/User/Side Bar Folders.sublime-settings",
+		"/opt/lampp/htdocs/isecure/protected/controllers/CommentController.php",
+		"/opt/lampp/htdocs/isecure/protected/models/Comment.php",
+		"/opt/lampp/htdocs/isecure/protected/views/videos/_comments.php",
+		"/opt/lampp/htdocs/isecure/protected/views/comment/_form.php",
+		"/opt/lampp/htdocs/isecure/protected/models/Videos.php",
+		"/opt/lampp/htdocs/isecure/protected/views/comment/_view.php",
+		"/opt/lampp/htdocs/isecure/protected/views/comment/index.php",
+		"/opt/lampp/htdocs/isecure/protected/views/videos/_view.php",
+		"/opt/lampp/htdocs/isecure/protected/views/lecturers/index.php",
+		"/opt/lampp/htdocs/isecure/protected/views/lecturers/_view.php",
+		"/opt/lampp/htdocs/isecure/protected/controllers/EmailSubscriptionsController.php",
+		"/opt/lampp/htdocs/isecure/protected/controllers/SubscriptionsController.php",
+		"/opt/lampp/htdocs/isecure/protected/controllers/LecturersController.php",
+		"/opt/lampp/htdocs/isecure/protected/extensions/adGallery/AdGallery.php",
+		"/opt/lampp/htdocs/isecure/protected/extensions/adGallery/views/adGallery.php",
+		"/opt/lampp/htdocs/isecure/protected/extensions/iSecure/views/ProgramsDropDownMenu.php",
+		"/opt/lampp/htdocs/isecure/protected/extensions/iSecure/iSecureProgramsMenu.php",
+		"/opt/lampp/htdocs/isecure/protected/components/views/NewsWidget.php",
+		"/opt/lampp/htdocs/isecure/protected/extensions/iSecure/iSecureNewsWidget.php",
+		"/opt/lampp/htdocs/isecure/protected/extensions/iSecure/iSecureLecturersMenu.php"
+	],
+	"find":
+	{
+		"height": 36.0
+	},
+	"find_in_files":
+	{
+		"height": 93.0,
+		"where_history":
+		[
+			"/opt/lampp/htdocs/isecure/protected/modules/shop",
+			"<project>",
+			"/opt/lampp/htdocs/onlinebarreview/protected",
+			"<project>",
+			"/opt/lampp/htdocs/onlinebarreview/protected"
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"added ShopModule::deliveryTimes",
+			"insert",
+			"orderposition",
+			"position",
+			"Variations",
+			"$Variations",
+			"email",
+			"show_email",
+			"showemail",
+			"applyOrderOptions()",
+			"shipping_method setstate",
+			"getState",
+			"setState",
+			"setState('customer_id')",
+			"setState",
+			"billing_address_id",
+			"validate",
+			"shop",
+			"profile",
+			"CWebUser",
+			"getCustomer",
+			"$model->delivery_address_id = $address->id;",
+			"billing",
+			"layout",
+			"$layout",
+			"flex",
+			"shopping-cart user-cart",
+			"$Videos",
+			"Videos",
+			"Videos url",
+			"Videos.url",
+			"getUrl",
+			"post_id",
+			"Videos.url",
+			"url",
+			"video",
+			"videos",
+			"STATUS_PUBLISHED",
+			"gmail.com",
+			"smtp",
+			"smtp.gmail.com",
+			"gmail",
+			"-fb",
+			".body-fb",
+			"footer",
+			"navbar",
+			"bg-hover-color",
+			"hover",
+			"bg hover",
+			"footer",
+			"body",
+			"social",
+			"pagination",
+			"recentCommentCount",
+			"$_model",
+			"recentCommentCount",
+			"maxComments",
+			"$vimeo_video",
+			"post",
+			"form",
+			"backto",
+			"<div id = Page",
+			"Page",
+			"UserStatus",
+			"TblResellers",
+			"TblResellers.php",
+			"'htmlOptions",
+			"tblBarangay",
+			"activkey",
+			"Retype Password is incorrect.",
+			"encrypting",
+			"update_at",
+			"create_at"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+			"-isecure",
+			".body-isecure",
+			"$video",
+			"updated_at",
+			"created_at"
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"selected": 0,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "/opt/lampp/htdocs/isecure/protected/modules/shop/controllers/OrderController.php",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 11337,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								8356,
+								8356
+							]
+						],
+						"settings":
+						{
+							"BracketHighlighterBusy": false,
+							"bh_regions":
+							[
+								"bh_default",
+								"bh_default_center",
+								"bh_default_open",
+								"bh_default_close",
+								"bh_square",
+								"bh_square_center",
+								"bh_square_open",
+								"bh_square_close",
+								"bh_round",
+								"bh_round_center",
+								"bh_round_open",
+								"bh_round_close",
+								"bh_unmatched",
+								"bh_unmatched_center",
+								"bh_unmatched_open",
+								"bh_unmatched_close",
+								"bh_regex",
+								"bh_regex_center",
+								"bh_regex_open",
+								"bh_regex_close",
+								"bh_double_quote",
+								"bh_double_quote_center",
+								"bh_double_quote_open",
+								"bh_double_quote_close",
+								"bh_tag",
+								"bh_tag_center",
+								"bh_tag_open",
+								"bh_tag_close",
+								"bh_angle",
+								"bh_angle_center",
+								"bh_angle_open",
+								"bh_angle_close",
+								"bh_c_define",
+								"bh_c_define_center",
+								"bh_c_define_open",
+								"bh_c_define_close",
+								"bh_curly",
+								"bh_curly_center",
+								"bh_curly_open",
+								"bh_curly_close",
+								"bh_single_quote",
+								"bh_single_quote_center",
+								"bh_single_quote_open",
+								"bh_single_quote_close"
+							],
+							"syntax": "Packages/PHP/PHP.tmLanguage",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 4482.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 26.0
+	},
+	"input":
+	{
+		"height": 0.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"project": "isecure.sublime-project",
+	"replace":
+	{
+		"height": 48.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"settings":
+	{
+	},
+	"show_minimap": false,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 225.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}
